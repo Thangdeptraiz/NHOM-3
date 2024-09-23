@@ -71,13 +71,6 @@ class EquationSolverApp:
         self.coefficients.clear()
         self.results.clear()
 
-   
-    def clear_entries(self):
-        for widget in self.equation_frame.winfo_children():
-            widget.destroy()
-        self.coefficients.clear()
-        self.results.clear()
-
     def solve_equations(self):
         try:
             A = []
@@ -107,11 +100,9 @@ class EquationSolverApp:
 
         except Exception as e:
             messagebox.showerror("Error", f"Không thể giải được hệ phương trình: {e}")
+
+
 # Tạo cửa sổ ứng dụng
 root = tk.Tk()
 app = EquationSolverApp(root)
 root.mainloop()
-
-
-
-
