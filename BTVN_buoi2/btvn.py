@@ -55,7 +55,7 @@ label_y2 = tk.Label(root, text="y =")
 label_y2.grid(row=3, column=3)
 entry_c2 = tk.Entry(root, width=5)
 entry_c2.grid(row=3, column=4)
-
+//the gioi nay la cua bo may
 # Nút bấm để giải hệ phương trình
 solve_button = tk.Button(root, text="Giải", command=solve_equation)
 solve_button.grid(row=4, column=0, columnspan=5)
