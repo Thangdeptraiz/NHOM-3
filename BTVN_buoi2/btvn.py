@@ -2,79 +2,84 @@ import tkinter as tk
 from tkinter import messagebox
 import numpy as np
 
+
 class EquationSolverApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Giải hệ phương trình")
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Giải hệ phương trình")
+        self.coefficients = []  # Lưu các ô nhập hệ số
+        self.results = []  # Lưu các ô nhập kết quả
 
-        # Số lượng phương trình
-        self.n = tk.IntVar(value=2)  # Giá trị mặc định là 2
-        self.m = tk.IntVar(value=2)  # Số ẩn, mặc định là 2
+        self.create_widgets()
 
-        # Nhập số lượng phương trình và ẩn
-        self.label_n = tk.Label(root, text="Số lượng phương trình:")
-        self.label_n.grid(row=0, column=0)
-        self.entry_n = tk.Entry(root, textvariable=self.n, width=5)
-        self.entry_n.grid(row=0, column=1)
+    def create_widgets(self):
+        self.equation_frame = tk.Frame(self.master)
+        self.equation_frame.pack()
 
-        self.label_m = tk.Label(root, text="Số lượng ẩn:")
-        self.label_m.grid(row=0, column=2)
-        self.entry_m = tk.Entry(root, textvariable=self.m, width=5)
-        self.entry_m.grid(row=0, column=3)
+        tk.Label(self.master, text="Nhập số lượng phương trình:").pack()
+        self.num_eq_entry = tk.Entry(self.master)
+        self.num_eq_entry.pack()
 
-        self.button_create = tk.Button(root, text="Tạo ô nhập", command=self.create_input_fields)
-        self.button_create.grid(row=0, column=4)
+        self.create_matrix_button = tk.Button(self.master, text="Tạo phương trình",
+                                              command=self.create_equation_entries)
+        self.create_matrix_button.pack()
 
-        self.input_fields = []  # Danh sách chứa các ô nhập
+        self.solve_button = tk.Button(self.master, text="Giải hệ phương trình", command=self.solve_equations)
+        self.solve_button.pack()
 
-    def create_input_fields(self):
-        # Xóa các ô nhập cũ nếu có
-        for widget in self.root.grid_slaves():
-            if int(widget.grid_info()["row"]) > 1:
-                widget.grid_forget()
+        self.result_label = tk.Label(self.master, text="")
+        self.result_label.pack()
 
-        self.input_fields.clear()
+    def create_equation_entries(self):
+        try:
+            num_eq = int(self.num_eq_entry.get())
+            self.clear_entries()
 
-        # Tạo ô nhập cho n phương trình
-        for i in range(self.n.get()):
-            label = tk.Label(self.root, text=f"Phương trình {i+1}:")
-            label.grid(row=i+1, column=0)
+            for i in range(num_eq):
+                row_frame = tk.Frame(self.equation_frame)
+                row_frame.pack()
 
-            coefficients = []
-            for j in range(self.m.get()):
-                entry = tk.Entry(self.root, width=5)
-                entry.grid(row=i+1, column=j+1)
-                coefficients.append(entry)
+                row = []
+                for j in range(num_eq):
+                    coef_entry = tk.Entry(row_frame, width=5)
+                    coef_entry.pack(side=tk.LEFT)
 
-                if j < self.m.get() - 1:
-                    tk.Label(self.root, text=" + ").grid(row=i+1, column=j+2)
+                    # Thêm nhãn cho ẩn của phương trình (x1, x2, ...)
+                    if j < num_eq - 1:
+                        var_label = tk.Label(row_frame, text=f"x{j + 1} +")
+                    else:
+                        var_label = tk.Label(row_frame, text=f"x{j + 1}")  # Không thêm dấu "+" ở hệ số cuối
+                    var_label.pack(side=tk.LEFT)
 
-            # Ô kết quả c có thể nhập số
-            entry_c = tk.Entry(self.root, width=5)
-            entry_c.grid(row=i+1, column=self.m.get() + 1)
+                    row.append(coef_entry)
 
-            # Đặt dấu "=" trước ô nhập cuối cùng
-            tk.Label(self.root, text=" = ").grid(row=i+1, column=self.m.get() + 2)
+                # Thêm dấu "=" và ô nhập kết quả
+                equal_label = tk.Label(row_frame, text=" = ")
+                equal_label.pack(side=tk.LEFT)
 
-            coefficients.append(entry_c)
-            self.input_fields.append(coefficients)
+                result_entry = tk.Entry(row_frame, width=5)  # Ô nhập kết quả
+                result_entry.pack(side=tk.LEFT)
 
-        # Nút bấm để giải hệ phương trình
-        self.solve_button = tk.Button(self.root, text="Giải", command=self.solve_equations)
-        self.solve_button.grid(row=self.n.get() + 1, column=0, columnspan=self.m.get() + 3)
+                self.coefficients.append(row)
+                self.results.append(result_entry)
+        except ValueError:
+            messagebox.showerror("Error", "Vui lòng nhập số hợp lệ.")
 
-        # Nhãn hiển thị kết quả
-        self.result_label = tk.Label(self.root, text="Kết quả:")
-        self.result_label.grid(row=self.n.get() + 2, column=0, columnspan=self.m.get() + 3)
+    def clear_entries(self):
+        for widget in self.equation_frame.winfo_children():
+            widget.destroy()
+        self.coefficients.clear()
+        self.results.clear()
 
     def solve_equations(self):
         try:
             A = []
             B = []
 
-            for coefficients in self.input_fields:
-                row = [float(entry.get()) for entry in coefficients[:-1]]  # Hệ số
-                c = float(coefficients[-1].get())  # Kết quả
+            # Lấy hệ số và kết quả từ các ô nhập và đánh giá biểu thức toán học
+            for row_entries, result_entry in zip(self.coefficients, self.results):
+                row = [float(eval(coef.get())) for coef in row_entries]  # Sử dụng eval() để đánh giá biểu thức
+                c = float(eval(result_entry.get()))  # Sử dụng eval() cho kết quả
                 A.append(row)
                 B.append(c)
 
@@ -90,13 +95,15 @@ class EquationSolverApp:
                     self.result_label.config(text="Hệ phương trình vô nghiệm.")
             else:
                 solution = np.linalg.solve(A, B)
-                result_text = ', '.join([f"x{i+1} = {solution[i]:.2f}" for i in range(len(solution))])
+                result_text = ', '.join([f"x{i + 1} = {solution[i]:.2f}" for i in range(len(solution))])
                 self.result_label.config(text=result_text)
 
         except Exception as e:
             messagebox.showerror("Error", f"Không thể giải được hệ phương trình: {e}")
 
+
 # Tạo cửa sổ ứng dụng
 root = tk.Tk()
 app = EquationSolverApp(root)
 root.mainloop()
+
