@@ -30,6 +30,47 @@ class EquationSolverApp:
         self.result_label = tk.Label(self.master, text="")
         self.result_label.pack()
 
+    def create_equation_entries(self):
+        try:
+            num_eq = int(self.num_eq_entry.get())
+            self.clear_entries()
+
+            for i in range(num_eq):
+                row_frame = tk.Frame(self.equation_frame)
+                row_frame.pack()
+
+                row = []
+                for j in range(num_eq):
+                    coef_entry = tk.Entry(row_frame, width=5)
+                    coef_entry.pack(side=tk.LEFT)
+
+                    # Thêm nhãn cho ẩn của phương trình (x1, x2, ...)
+                    if j < num_eq - 1:
+                        var_label = tk.Label(row_frame, text=f"x{j + 1} +")
+                    else:
+                        var_label = tk.Label(row_frame, text=f"x{j + 1}")  # Không thêm dấu "+" ở hệ số cuối
+                    var_label.pack(side=tk.LEFT)
+
+                    row.append(coef_entry)
+
+                # Thêm dấu "=" và ô nhập kết quả
+                equal_label = tk.Label(row_frame, text=" = ")
+                equal_label.pack(side=tk.LEFT)
+
+                result_entry = tk.Entry(row_frame, width=5)  # Ô nhập kết quả
+                result_entry.pack(side=tk.LEFT)
+
+                self.coefficients.append(row)
+                self.results.append(result_entry)
+        except ValueError:
+            messagebox.showerror("Error", "Vui lòng nhập số hợp lệ.")
+
+    def clear_entries(self):
+        for widget in self.equation_frame.winfo_children():
+            widget.destroy()
+        self.coefficients.clear()
+        self.results.clear()
+
    
     def clear_entries(self):
         for widget in self.equation_frame.winfo_children():
