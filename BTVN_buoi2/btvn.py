@@ -102,8 +102,5 @@ class EquationSolverApp:
             messagebox.showerror("Error", f"Không thể giải được hệ phương trình: {e}")
 
 
-# Tạo cửa sổ ứng dụng
-root = tk.Tk()
-app = EquationSolverApp(root)
-root.mainloop()
+
 
