@@ -66,17 +66,3 @@ result_label.grid(row=5, column=0, columnspan=5)
 
 # Bắt đầu vòng lặp chính của Tkinter
 root.mainloop()
-#them
-# Tính định thức của ma trận hệ số
-det = np.linalg.det(A)
-
-if det == 0:
-    # Kiểm tra xem hệ phương trình vô nghiệm hay vô số nghiệm
-    if np.allclose(np.dot(A, [0, 0]), B):
-        result_label.config(text="Hệ phương trình có vô số nghiệm.")
-    else:
-        result_label.config(text="Hệ phương trình vô nghiệm.")
-else:
-    # Giải hệ phương trình
-    solution = np.linalg.solve(A, B)
-    result_label.config(text=f"x = {solution[0]:.2f}, y = {solution[1]:.2f}")
