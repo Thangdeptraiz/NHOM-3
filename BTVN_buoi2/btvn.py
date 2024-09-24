@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import messagebox
 import numpy as np
 
-
 class EquationSolverApp:
     def __init__(self, master):
         self.master = master
@@ -26,6 +25,9 @@ class EquationSolverApp:
 
         self.solve_button = tk.Button(self.master, text="Giải hệ phương trình", command=self.solve_equations)
         self.solve_button.pack()
+
+        self.clear_entries_button = tk.Button(self.master, text="Xóa Dữ Liệu", command=self.clear_all_entries)
+        self.clear_entries_button.pack()
 
         self.result_label = tk.Label(self.master, text="")
         self.result_label.pack()
@@ -71,6 +73,14 @@ class EquationSolverApp:
         self.coefficients.clear()
         self.results.clear()
 
+    def clear_all_entries(self):
+        for row_entries in self.coefficients:
+            for coef_entry in row_entries:
+                coef_entry.delete(0, tk.END)  # Xóa dữ liệu trong ô nhập hệ số
+
+        for result_entry in self.results:
+            result_entry.delete(0, tk.END)  # Xóa dữ liệu trong ô nhập kết quả
+
     def solve_equations(self):
         try:
             A = []
@@ -100,7 +110,6 @@ class EquationSolverApp:
 
         except Exception as e:
             messagebox.showerror("Error", f"Không thể giải được hệ phương trình: {e}")
-
 
 # Tạo cửa sổ ứng dụng
 root = tk.Tk()
