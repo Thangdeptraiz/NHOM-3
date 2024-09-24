@@ -96,17 +96,17 @@ class EquationSolverApp:
             A = np.array(A)
             B = np.array(B)
 
-            det = np.linalg.det(A)
-
-            if det == 0:
-                if np.allclose(np.dot(A, [0] * A.shape[1]), B):
-                    self.result_label.config(text="Hệ phương trình có vô số nghiệm.")
-                else:
-                    self.result_label.config(text="Hệ phương trình vô nghiệm.")
+            rank_A = np.linalg.matrix_rank(A)
+            if rank_A < A.shape[1]:  # Nếu rank < số cột, hệ phương trình có vô số nghiệm
+                self.result_label.config(text="Hệ phương trình có vô số nghiệm.")
             else:
-                solution = np.linalg.solve(A, B)
-                result_text = ', '.join([f"x{i + 1} = {solution[i]:.2f}" for i in range(len(solution))])
-                self.result_label.config(text=result_text)
+                det = np.linalg.det(A)
+                if det == 0:
+                    self.result_label.config(text="Hệ phương trình vô nghiệm.")
+                else:
+                    solution = np.linalg.solve(A, B)
+                    result_text = ', '.join([f"x{i + 1} = {solution[i]:.2f}" for i in range(len(solution))])
+                    self.result_label.config(text=result_text)
 
         except Exception as e:
             messagebox.showerror("Error", f"Không thể giải được hệ phương trình: {e}")
