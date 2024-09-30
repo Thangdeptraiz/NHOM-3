@@ -64,4 +64,32 @@ plt.title('Biểu đồ phân bố điểm theo lớp')
 plt.grid(True)
 plt.xticks(rotation=45)
 plt.show()
+#4
+# Vẽ biểu đồ cho TX1 và TX2
+tx1_scores = in_data[:, 3]  # Cột TX1
+tx2_scores = in_data[:, 4]  # Cột TX2
 
+plt.figure(figsize=(10, 6))
+plt.plot(lops, tx1_scores, label="Điểm TX1", marker='o')
+plt.plot(lops, tx2_scores, label="Điểm TX2", marker='^')
+
+plt.xlabel('Lớp')
+plt.ylabel('Điểm bài kiểm tra')
+plt.legend()
+plt.title('Biểu đồ phân bố điểm TX1 và TX2 theo lớp')
+plt.grid(True)
+plt.xticks(rotation=45)  # Xoay nhãn trục x để dễ đọc hơn
+plt.show()
+
+# Vẽ biểu đồ điểm chuẩn đầu ra L1 và L2 theo lớp
+plt.figure(figsize=(8, 5))
+plt.plot(lops, L1_scores, label="L1 (Điểm chuẩn đầu ra)", marker='o')
+plt.plot(lops, L2_scores, label="L2 (Điểm chuẩn đầu ra)", marker='^')
+
+plt.xlabel('Lớp')
+plt.ylabel('Điểm')
+plt.legend()
+plt.title('Điểm chuẩn đầu ra L1 và L2 theo lớp')
+plt.grid(True)
+plt.xticks(rotation=45)
+plt.show()
