@@ -14,14 +14,25 @@ print(in_data)
 total_students = in_data[:, 2]
 print('Tổng số sinh viên đi thi:', np.sum(total_students))
 
-# Tìm lớp có số sinh viên đạt nhiều điểm A nhất
+# Tìm số lượng sinh viên theo các hạng điểm
 diemA = in_data[:, 4]
-diemBc = in_data[:, 5]
-lops = in_data[:, 1]
-max_diemA = diemA.max()
-max_diemA_index = np.where(diemA == max_diemA)
-print('Lớp có nhiều sinh viên đạt điểm A nhất là {max_diemA_index} với {max_diemA} sinh viên đạt điểm A')
+diemB_plus = in_data[:, 5]
+diemB = in_data[:, 6]
+diemC_plus = in_data[:, 7]
+diemC = in_data[:, 8]
+diemD_plus = in_data[:, 9]
+diemD = in_data[:, 10]
+diemF = in_data[:, 11]
 
+
+print(f'Số sinh viên đạt điểm A: {np.sum(diemA)}')
+print(f'Số sinh viên đạt điểm B+: {np.sum(diemB_plus)}')
+print(f'Số sinh viên đạt điểm B: {np.sum(diemB)}')
+print(f'Số sinh viên đạt điểm C+: {np.sum(diemC_plus)}')
+print(f'Số sinh viên đạt điểm C: {np.sum(diemC)}')
+print(f'Số sinh viên đạt điểm D+: {np.sum(diemD_plus)}')
+print(f'Số sinh viên đạt điểm D: {np.sum(diemD)}')
+print(f'Số sinh viên rớt (F): {np.sum(diemF)}')
 # Vẽ biểu đồ phân bố điểm A, B+
 
 plt.figure(figsize=(10, 6))
