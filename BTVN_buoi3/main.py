@@ -33,16 +33,16 @@ print(f'Số sinh viên đạt điểm C: {np.sum(diemC)}')
 print(f'Số sinh viên đạt điểm D+: {np.sum(diemD_plus)}')
 print(f'Số sinh viên đạt điểm D: {np.sum(diemD)}')
 print(f'Số sinh viên rớt (F): {np.sum(diemF)}')
-# Vẽ biểu đồ phân bố điểm A, B+
+# Tính kết quả theo chuẩn đầu ra L1, L2
+L1_scores = in_data[:, 12]
+L2_scores = in_data[:, 13]
 
-plt.figure(figsize=(10, 6))
-plt.plot(lops, diemA, label="Điểm A", marker='o')
-plt.plot(lops, diemBc, label="Điểm B+", marker='^')
+print(f'Trung bình điểm chuẩn đầu ra L1: {np.mean(L1_scores)}')
+print(f'Trung bình điểm chuẩn đầu ra L2: {np.mean(L2_scores)}')
 
-plt.xlabel('Lớp')
-plt.ylabel('Số sinh viên đạt điểm')
-plt.legend()
-plt.title('Biểu đồ phân bố điểm A, B+ theo lớp')
-plt.grid(True)
-plt.xticks(rotation=45)  # Xoay nhãn trục x để dễ đọc hơn
-plt.show()
+# Tìm lớp có nhiều sinh viên đạt điểm A nhất
+lops = in_data[:, 1]  # Class identifiers
+max_diemA = diemA.max()
+max_diemA_index = np.where(diemA == max_diemA)[0]
+print(f'Lớp có nhiều sinh viên đạt điểm A nhất là lớp {lops[max_diemA_index]} với {max_diemA} sinh viên đạt điểm A.')
+
