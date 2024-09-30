@@ -46,3 +46,22 @@ max_diemA = diemA.max()
 max_diemA_index = np.where(diemA == max_diemA)[0]
 print(f'Lớp có nhiều sinh viên đạt điểm A nhất là lớp {lops[max_diemA_index]} với {max_diemA} sinh viên đạt điểm A.')
 
+# Vẽ biểu đồ phân bố điểm A, B+, B, C+, C, D+, D, F theo lớp
+plt.figure(figsize=(10, 6))
+plt.plot(lops, diemA, label="Điểm A", marker='o')
+plt.plot(lops, diemB_plus, label="Điểm B+", marker='^')
+plt.plot(lops, diemB, label="Điểm B", marker='s')
+plt.plot(lops, diemC_plus, label="Điểm C+", marker='d')
+plt.plot(lops, diemC, label="Điểm C", marker='x')
+plt.plot(lops, diemD_plus, label="Điểm D+", marker='*')
+plt.plot(lops, diemD, label="Điểm D", marker='v')
+plt.plot(lops, diemF, label="Điểm F", marker='<')
+
+plt.xlabel('Lớp')
+plt.ylabel('Số sinh viên đạt điểm')
+plt.legend()
+plt.title('Biểu đồ phân bố điểm theo lớp')
+plt.grid(True)
+plt.xticks(rotation=45)
+plt.show()
+
