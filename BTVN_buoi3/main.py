@@ -1,18 +1,19 @@
 import pandas as pd
-from numpy import array
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Đọc dữ liệu từ file diemPython.csv
+# Đọc dữ liệu từ file CSV
 df = pd.read_csv('diemPython.csv')
 
 # Chuyển dữ liệu thành mảng numpy
-in_data = array(df.iloc[:,:])
-print(in_data)
+in_data = np.array(df.iloc[:, :])
+
+# Columns in CSV (ví dụ):
+# | StudentID | Class | Total Students | TX1 | TX2 | A | B+ | B | C+ | C | D+ | D | F | L1 | L2 |
 
 # Tính tổng số sinh viên đi thi
-total_students = in_data[:, 2]
-print('Tổng số sinh viên đi thi:', np.sum(total_students))
+total_students = np.sum(in_data[:, 2])
+print('Tổng số sinh viên đi thi:', total_students)
 
 # Tìm số lượng sinh viên theo các hạng điểm
 diemA = in_data[:, 4]
@@ -24,7 +25,6 @@ diemD_plus = in_data[:, 9]
 diemD = in_data[:, 10]
 diemF = in_data[:, 11]
 
-
 print(f'Số sinh viên đạt điểm A: {np.sum(diemA)}')
 print(f'Số sinh viên đạt điểm B+: {np.sum(diemB_plus)}')
 print(f'Số sinh viên đạt điểm B: {np.sum(diemB)}')
@@ -33,6 +33,7 @@ print(f'Số sinh viên đạt điểm C: {np.sum(diemC)}')
 print(f'Số sinh viên đạt điểm D+: {np.sum(diemD_plus)}')
 print(f'Số sinh viên đạt điểm D: {np.sum(diemD)}')
 print(f'Số sinh viên rớt (F): {np.sum(diemF)}')
+
 # Tính kết quả theo chuẩn đầu ra L1, L2
 L1_scores = in_data[:, 12]
 L2_scores = in_data[:, 13]
@@ -64,7 +65,7 @@ plt.title('Biểu đồ phân bố điểm theo lớp')
 plt.grid(True)
 plt.xticks(rotation=45)
 plt.show()
-#4
+
 # Vẽ biểu đồ cho TX1 và TX2
 tx1_scores = in_data[:, 3]  # Cột TX1
 tx2_scores = in_data[:, 4]  # Cột TX2
