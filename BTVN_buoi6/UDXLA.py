@@ -1,134 +1,160 @@
+import tkinter as tk
+from tkinter import filedialog
 import cv2
 import numpy as np
-import tkinter as tk
-from tkinter import filedialog, messagebox
-from tkinter import ttk
+from PIL import Image, ImageTk
 
-def load_images():
-    # Chọn nhiều file hình ảnh
-    file_paths = filedialog.askopenfilenames(filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp")])
-    if not file_paths:
-        return
+class ImageProcessor:
+    def __init__(self, master):
+        self.master = master
+        master.title("Ứng dụng Xử lý Ảnh")
 
-    # Đọc các hình ảnh
-    global images, filtered_images
-    images = [cv2.imread(file_path) for file_path in file_paths]
-    filtered_images = images.copy()  # Khởi tạo danh sách để lưu ảnh đã lọc
+        self.image = None
+        self.filtered_image = None
+        self.cap = None
 
-    if any(img is None for img in images):
-        messagebox.showerror("Error", "Không thể mở hoặc đọc file hình ảnh.")
-    else:
-        messagebox.showinfo("Thông báo", f"{len(images)} hình ảnh đã được tải thành công.")
+        # Tạo các button
+        self.load_button = tk.Button(master, text="Tải ảnh", command=self.load_image)
+        self.load_button.pack(pady=5)
 
-def display_image(image, title):
-    # Hiển thị hình ảnh bằng OpenCV với tiêu đề đơn giản
-    cv2.imshow(title, image)
+        self.capture_button = tk.Button(master, text="Chụp ảnh", command=self.open_camera)
+        self.capture_button.pack(pady=5)
 
-def apply_sharpen_filter():
-    if not images:
-        messagebox.showerror("Error", "Chưa chọn hình ảnh.")
-        return
+        self.filter_options = [
+            "Xóa phông", # Thay đổi "Làm mờ" thành "Xóa phông"
+            "Làm nét",
+            "Ảnh đen trắng",
+            "Xóa nhiễu",
+            "Tăng cường sáng",
+            "Làm mịn ảnh"
+        ]
+        self.filter_var = tk.StringVar(master)
+        self.filter_var.set("Chọn bộ lọc")
+        self.filter_menu = tk.OptionMenu(master, self.filter_var, *self.filter_options)
+        self.filter_menu.pack(pady=5)
 
-    # Khai báo các kernel sharpen
-    kernel_sharpen_1 = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-    kernel_sharpen_2 = np.array([[1, 1, 1], [1, -7, 1], [1, 1, 1]])
-    kernel_sharpen_3 = np.array([[-1, -1, -1, -1, -1],
-                                 [-1, 2, 2, 2, -1],
-                                 [-1, 2, 8, 2, -1],
-                                 [-1, 2, 2, 2, -1],
-                                 [-1, -1, -1, -1, -1]]) / 8.0
+        self.apply_button = tk.Button(master, text="Áp dụng", command=self.apply_filter)
+        self.apply_button.pack(pady=5)
 
-    # Lấy bộ lọc được chọn từ dropdown
-    selected_filter = filter_combobox.get()
+        self.save_button = tk.Button(master, text="Lưu ảnh", command=self.save_image, state="disabled")
+        self.save_button.pack(pady=5)
 
-    global filtered_images  # Sử dụng biến toàn cục để lưu ảnh đã lọc
-    for idx, img in enumerate(images):
-        if selected_filter == "Original":
-            filtered_img = img
-        elif selected_filter == "Sharpening":
-            filtered_img = cv2.filter2D(img, -1, kernel_sharpen_1)
-        elif selected_filter == "Excessive Sharpening":
-            filtered_img = cv2.filter2D(img, -1, kernel_sharpen_2)
-        elif selected_filter == "Edge Enhancement":
-            filtered_img = cv2.filter2D(img, -1, kernel_sharpen_3)
-        elif selected_filter == "Black & White":
-            filtered_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        elif selected_filter == "Edge Detection":
-            filtered_img = cv2.Canny(img, 100, 200)
-        elif selected_filter == "Background Removal":
-            filtered_img = remove_background(img)  # Gọi hàm xóa phông
+        # Tạo khung chứa ảnh
+        self.image_frame = tk.Frame(master)
+        self.image_frame.pack()
 
-        filtered_images[idx] = filtered_img  # Cập nhật ảnh đã lọc vào danh sách
+        self.original_label = tk.Label(self.image_frame, text="Ảnh gốc")
+        self.original_label.grid(row=0, column=0)
 
-        # Hiển thị hình ảnh đã áp dụng bộ lọc
-        display_image(filtered_img, f"Filtered Image {idx + 1}: {selected_filter}")
+        self.processed_label = tk.Label(self.image_frame, text="Ảnh đã xử lý")
+        self.processed_label.grid(row=0, column=1)
 
-def remove_background(img):
-    # Sử dụng GrabCut để xóa phông và giữ lại người
-    mask = np.zeros(img.shape[:2], np.uint8)
+        self.original_image_label = tk.Label(self.image_frame)
+        self.original_image_label.grid(row=1, column=0)
 
-    # Khởi tạo các mảng background và foreground
-    bgdModel = np.zeros((1, 65), np.float64)
-    fgdModel = np.zeros((1, 65), np.float64)
+        self.processed_image_label = tk.Label(self.image_frame)
+        self.processed_image_label.grid(row=1, column=1)
 
-    # Tạo một hình chữ nhật bao quanh đối tượng chính (người)
-    height, width = img.shape[:2]
-    rect = (10, 10, width - 10, height - 10)
+    def load_image(self):
+        """Mở hộp thoại chọn file và hiển thị ảnh."""
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            self.image = cv2.imread(file_path)
+            self.show_image(self.image, self.original_image_label)
+            self.reset_processed_image()
 
-    # Áp dụng GrabCut
-    cv2.grabCut(img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+    def open_camera(self):
+        """Mở camera và hiển thị trực tiếp."""
+        self.cap = cv2.VideoCapture(0)
+        if self.cap.isOpened():
+            self.master.bind('<Return>', self.capture_from_camera)
+            self.show_camera_feed()
+        else:
+            print("Không thể mở camera.")
 
-    # Tạo mặt nạ cuối cùng để giữ lại phần đối tượng chính
-    mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+    def show_camera_feed(self):
+        """Hiển thị luồng video từ camera."""
+        ret, frame = self.cap.read()
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(frame)
+            img = ImageTk.PhotoImage(img)
+            self.original_image_label.config(image=img)
+            self.original_image_label.image = img
+            self.original_image_label.after(10, self.show_camera_feed)
 
-    # Áp dụng mặt nạ lên ảnh gốc để xóa phông
-    img_foreground = img * mask2[:, :, np.newaxis]
+    def capture_from_camera(self, event=None):
+        """Chụp ảnh từ camera khi nhấn Enter."""
+        if self.cap is not None and self.cap.isOpened():
+            ret, frame = self.cap.read()
+            if ret:
+                self.image = frame
+                self.show_image(self.image, self.original_image_label)
+                self.reset_processed_image()
+            self.cap.release()
+            self.master.unbind('<Return>')
 
-    return img_foreground
+    def apply_filter(self):
+        """Áp dụng bộ lọc dựa trên lựa chọn và hiển thị ảnh đã xử lý."""
+        if self.image is not None:
+            filter_type = self.filter_var.get()
+            self.filtered_image = self.apply_filter_to_image(self.image.copy(), filter_type)
+            self.show_image(self.filtered_image, self.processed_image_label)
+            self.save_button.config(state="normal")
 
-def save_images():
-    if not filtered_images:
-        messagebox.showerror("Error", "Chưa có hình ảnh để lưu.")
-        return
+    def apply_filter_to_image(self, img, filter_type):
+        """Áp dụng bộ lọc lên ảnh."""
+        if filter_type == "Xóa phông": # Áp dụng thuật toán xóa phông
+            mask = np.zeros(img.shape[:2], np.uint8)
+            bgdModel = np.zeros((1, 65), np.float64)
+            fgdModel = np.zeros((1, 65), np.float64)
+            rect = (80, 80, img.shape[1] - 80, img.shape[0] - 80)
+            cv2.grabCut(img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+            mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+            blurred_background = cv2.GaussianBlur(img, (51, 51), 0)
+            final_image = blurred_background.copy()
+            final_image[mask2 == 1] = img[mask2 == 1]
+            return final_image
+        elif filter_type == "Làm nét":
+            kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            return cv2.filter2D(img, -1, kernel)
+        elif filter_type == "Ảnh đen trắng":
+            return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        elif filter_type == "Xóa nhiễu":
+            return cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
+        elif filter_type == "Tăng cường sáng":
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            h, s, v = cv2.split(hsv)
+            v_eq = clahe.apply(v)
+            hsv_eq = cv2.merge((h, s, v_eq))
+            return cv2.cvtColor(hsv_eq, cv2.COLOR_HSV2BGR)
+        elif filter_type == "Làm mịn ảnh":
+            kernel = np.ones((5, 5), np.float32) / 25.0
+            return cv2.filter2D(img, -1, kernel)
+        else:
+            return img
 
-    save_dir = filedialog.askdirectory()
-    if not save_dir:
-        return
+    def save_image(self):
+        """Lưu ảnh đã xử lý."""
+        if self.filtered_image is not None:
+            file_path = filedialog.asksaveasfilename(defaultextension=".jpg")
+            if file_path:
+                cv2.imwrite(file_path, self.filtered_image)
 
-    # Lưu từng ảnh đã lọc vào thư mục đã chọn
-    for idx, img in enumerate(filtered_images):
-        file_name = f"{save_dir}/filtered_image_{idx + 1}.jpg"
-        cv2.imwrite(file_name, img)  # Lưu ảnh đã được lọc
-    messagebox.showinfo("Thông báo", f"Hình ảnh đã được lưu thành công tại {save_dir}")
+    def show_image(self, img, label):
+        """Hiển thị ảnh lên label."""
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(img)
+        img = ImageTk.PhotoImage(img)
+        label.config(image=img)
+        label.image = img
 
-# Khởi tạo cửa sổ Tkinter
+    def reset_processed_image(self):
+        """Reset ảnh đã xử lý."""
+        self.processed_image_label.config(image="")
+        self.save_button.config(state="disabled")
+
 root = tk.Tk()
-root.title("Chọn Bộ Lọc Sắc Nét")
-
-# Khai báo biến hình ảnh
-images = []
-filtered_images = []
-
-# Nút tải hình ảnh
-load_button = tk.Button(root, text="Tải Hình Ảnh", command=load_images)
-load_button.pack(pady=10)
-
-# Dropdown để chọn bộ lọc
-filter_label = tk.Label(root, text="Chọn bộ lọc:")
-filter_label.pack(pady=5)
-
-filters = ["Original", "Sharpening", "Excessive Sharpening", "Edge Enhancement", "Black & White", "Edge Detection", "Background Removal"]
-filter_combobox = ttk.Combobox(root, values=filters)
-filter_combobox.set("Original")
-filter_combobox.pack(pady=5)
-
-# Nút áp dụng bộ lọc
-apply_button = tk.Button(root, text="Áp Dụng Bộ Lọc", command=apply_sharpen_filter)
-apply_button.pack(pady=10)
-
-# Nút lưu hình ảnh
-save_button = tk.Button(root, text="Lưu Hình Ảnh", command=save_images)
-save_button.pack(pady=10)
-
-# Chạy vòng lặp chính của Tkinter
+app = ImageProcessor(root)
 root.mainloop()
